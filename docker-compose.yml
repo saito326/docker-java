@@ -1,0 +1,36 @@
+version: '3.5'
+services:
+  # MySQL定義
+  db:
+    image: mysql:8.0.31
+    restart: always
+    volumes:
+      # 新規立ち上げ時にマウントしたボリューム内のSQLファイルを実行
+      - ./mysql/initdb.d:/docker-entrypoint-initdb.d/
+      - ./mysql/conf.d/my.cnf:/etc/mysql/conf.d/my.cnf
+    command: --lower_case_table_names=1
+    environment: # MySQL 環境設定
+      MYSQL_DATABASE: sample_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - 3306:3306
+
+  tomcat:
+    container_name: tomcat
+    build: ./development
+    volumes:
+      - "data:/opt/project"
+    environment:
+      - TZ=Asia/Tokyo
+    #network_mode: host
+    tty: true
+    
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/java
+      o: bind
